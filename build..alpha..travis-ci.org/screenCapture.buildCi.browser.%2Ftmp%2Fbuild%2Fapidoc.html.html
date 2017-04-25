@@ -1231,7 +1231,23 @@ You can increase the thread pool size by using @developmentseed's [node-eio]
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function ODBC() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+var odbc = require("bindings")("odbc_bindings")
+, SimpleQueue = require("./simple-queue")
+, util = require("util")
+, Readable = require('stream').Readable
+, Q = require('q');
+
+
+// Call of odbc.<span class="apidocCodeKeywordSpan">ODBC</span>() loads odbc library and allocate environment handle.
+// All calls of new Database() should use this same odbc unless passed as
+// options.odbc. ENV will keep value of this odbc after first call of Database.
+var ENV;
+
+module.exports = function (options)
+{
+return new Database(options);
+...</pre></li>
     </ul>
 
 
@@ -1348,22 +1364,21 @@ You can increase the thread pool size by using @developmentseed's [node-eio]
   }
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-ibmdb.open("DATABASE=&lt;dbname&gt;;HOSTNAME=&lt;myhost&gt;;UID=db2user;PWD=password;PORT=&lt;dbport&gt;;PROTOCOL
-=TCPIP", function (err,conn) {
-  if (err) return console.log(err);
 
-  conn.query('select 1 from sysibm.sysdummy1', function (err, data) {
-    if (err) console.log(err);
-    else console.log(data);
+* Update build.zip and defautl connection timeout. (Bimal Jha)
 
-    conn.<span class="apidocCodeKeywordSpan">close</span>(function () {
-      console.log('done');
-    });
-  });
-});
-```
+* Exit with error code on installation errors, to allow failure detection by automated build tools (Michael Szlapa)
 
-## Un-Install
+* Add pool related test files. (Bimal Jha)
+
+* Update conn.<span class="apidocCodeKeywordSpan">close</span>() for Pool to avoid reconnection before moving to available pool.
+Add pool related test files and update existing test files. (Bimal Jha)
+
+* update examples (Bimal Jha)
+
+* Updating the new build.zip for windows (Bimal Jha)
+
+* delete build.zip file on ntx64 after unzip (bimaljha)
 ...</pre></li>
     </ul>
 
@@ -1755,22 +1770,21 @@ You can increase the thread pool size by using @developmentseed's [node-eio]
   return deferred ? deferred.promise : false;
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-ibmdb.open("DATABASE=&lt;dbname&gt;;HOSTNAME=&lt;myhost&gt;;UID=db2user;PWD=password;PORT=&lt;dbport&gt;;PROTOCOL
-=TCPIP", function (err,conn) {
-  if (err) return console.log(err);
 
-  conn.query('select 1 from sysibm.sysdummy1', function (err, data) {
-    if (err) console.log(err);
-    else console.log(data);
+* Update build.zip and defautl connection timeout. (Bimal Jha)
 
-    conn.<span class="apidocCodeKeywordSpan">close</span>(function () {
-      console.log('done');
-    });
-  });
-});
-```
+* Exit with error code on installation errors, to allow failure detection by automated build tools (Michael Szlapa)
 
-## Un-Install
+* Add pool related test files. (Bimal Jha)
+
+* Update conn.<span class="apidocCodeKeywordSpan">close</span>() for Pool to avoid reconnection before moving to available pool.
+Add pool related test files and update existing test files. (Bimal Jha)
+
+* update examples (Bimal Jha)
+
+* Updating the new build.zip for windows (Bimal Jha)
+
+* delete build.zip file on ntx64 after unzip (bimaljha)
 ...</pre></li>
     </ul>
 
@@ -1845,7 +1859,23 @@ ibmdb.open("DATABASE=&lt;dbname&gt;;HOSTNAME=&lt;myhost&gt;;UID=db2user;PWD=pass
     });
   });
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  var self = this;
+  if (!self.queue) self.queue = [];
+
+  callback = callback || arguments[arguments.length - 1];
+
+  self.queue.push(function (next)
+  {
+    self.conn.<span class="apidocCodeKeywordSpan">columns</span>(catalog, schema, table, column, function (err, result)
+    {
+if (err) return callback(err, [], false);
+
+result.fetchAll(function (err, data)
+{
+  result.closeSync();
+  callback(err, data);
+...</pre></li>
     </ul>
 
 
@@ -2004,7 +2034,22 @@ ibmdb.open("DATABASE=&lt;dbname&gt;;HOSTNAME=&lt;myhost&gt;;UID=db2user;PWD=pass
     self.tables(obj.database, obj.schema, null, obj.type || "table", callback);
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+	/*
+	 * In its most basic form you must call describe passing it an object which
+	 * contains the database name and a callback function.
+	 *
+	 * This will return a list of tables in the database for all schemas.
+	 */
+	
+	db.<span class="apidocCodeKeywordSpan">describe</span>({
+		database : 'myAwesomeDatabase'
+	}, function (error, result) {
+		if (error) {
+			console.log(error);
+			return false;
+		}
+...</pre></li>
     </ul>
 
 
@@ -2025,7 +2070,23 @@ ibmdb.open("DATABASE=&lt;dbname&gt;;HOSTNAME=&lt;myhost&gt;;UID=db2user;PWD=pass
 
   return self;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  return deferred ? deferred.promise : self;
+};
+
+Database.prototype.endTransaction = function (rollback, cb)
+{
+  var self = this;
+
+  self.conn.<span class="apidocCodeKeywordSpan">endTransaction</span>(rollback, cb);
+  self.conn.inTransaction = false;
+
+  return self;
+};
+
+Database.prototype.commitTransaction = function (cb)
+{
+...</pre></li>
     </ul>
 
 
@@ -2046,7 +2107,23 @@ ibmdb.open("DATABASE=&lt;dbname&gt;;HOSTNAME=&lt;myhost&gt;;UID=db2user;PWD=pass
 
   return self;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  return self;
+};
+
+Database.prototype.endTransactionSync = function (rollback)
+{
+  var self = this;
+
+  self.conn.<span class="apidocCodeKeywordSpan">endTransactionSync</span>(rollback);
+  self.conn.inTransaction = false;
+
+  return self;
+};
+
+Database.prototype.commitTransactionSync = function ()
+{
+...</pre></li>
     </ul>
 
 
@@ -2081,7 +2158,23 @@ ibmdb.open("DATABASE=&lt;dbname&gt;;HOSTNAME=&lt;myhost&gt;;UID=db2user;PWD=pass
     }
   });
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  var self = this;
+  var stream = new Readable({ objectMode: true });
+  var results;
+  stream._read = function()
+  {
+// after the first internal call to _read, the 'results' should be set
+// and the stream can continue fetching the results
+if (results) return self.<span class="apidocCodeKeywordSpan">fetchStreamingResults</span>(results, stream);
+
+// in the first call to _read the stream starts to emit data once we've
+// queried for results
+return self.queryResult(sql, params, function (err, result)
+{
+  if (err)
+  {
+...</pre></li>
     </ul>
 
 
@@ -2594,7 +2687,24 @@ conn.<span class="apidocCodeKeywordSpan">query</span>('select 1 from sysibm.sysd
     } // function cbQuery
   }); //self.queue.push
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+conn.openSync(cn);
+
+// create table and insert some rows to it.
+conn.querySync("create table mytab (c1 int, c2 varchar(20))");
+conn.querySync("insert into mytab values (1, 'bimal'),(2, 'kamal'),(3,'mohan'),(4,'ram&amp;#
+x27;)");
+
+// Select data from table
+conn.<span class="apidocCodeKeywordSpan">queryResult</span>("select * from mytab", function (err, result) {
+if(err) {
+  console.log(err);
+  return;
+}
+
+// Fetch single row at once and process it.
+// Note that queryResult will bring only 64k data from server and result.fetchSync
+...</pre></li>
     </ul>
 
 
@@ -2937,7 +3047,23 @@ var Database = require("ibm_db").Database
   var self = this;
   return (self.conn.setIsolationLevel(isolationLevel));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+  return stmt;
+};
+
+Database.prototype.setIsolationLevel = function(isolationLevel)
+{
+  var self = this;
+  return (self.conn.<span class="apidocCodeKeywordSpan">setIsolationLevel</span>(isolationLevel));
+};
+
+//Proxy all of the ODBCStatement functions so that they are queued
+odbc.ODBCStatement.prototype._execute = odbc.ODBCStatement.prototype.execute;
+odbc.ODBCStatement.prototype._executeSync = odbc.ODBCStatement.prototype.executeSync;
+odbc.ODBCStatement.prototype._executeDirect = odbc.ODBCStatement.prototype.executeDirect;
+odbc.ODBCStatement.prototype._executeDirectSync = odbc.ODBCStatement.prototype.executeDirectSync;
+...</pre></li>
     </ul>
 
 
@@ -2971,7 +3097,23 @@ var Database = require("ibm_db").Database
     });
   });
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  var self = this;
+  if (!self.queue) self.queue = [];
+
+  callback = callback || arguments[arguments.length - 1];
+
+  self.queue.push(function (next)
+  {
+    self.conn.<span class="apidocCodeKeywordSpan">tables</span>(catalog, schema, table, type, function (err, result)
+    {
+if (err) return callback(err, [], false);
+
+result.fetchAll(function (err, data)
+{
+  result.closeSync();
+  callback(err, data);
+...</pre></li>
     </ul>
 
 
@@ -3003,7 +3145,23 @@ var Database = require("ibm_db").Database
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function ODBC() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+var odbc = require("bindings")("odbc_bindings")
+, SimpleQueue = require("./simple-queue")
+, util = require("util")
+, Readable = require('stream').Readable
+, Q = require('q');
+
+
+// Call of odbc.<span class="apidocCodeKeywordSpan">ODBC</span>() loads odbc library and allocate environment handle.
+// All calls of new Database() should use this same odbc unless passed as
+// options.odbc. ENV will keep value of this odbc after first call of Database.
+var ENV;
+
+module.exports = function (options)
+{
+return new Database(options);
+...</pre></li>
     </ul>
 
 
@@ -3035,7 +3193,23 @@ var Database = require("ibm_db").Database
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function createConnection() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+}
+
+if (!cb)
+{
+  deferred = Q.defer();
+}
+
+self.odbc.<span class="apidocCodeKeywordSpan">createConnection</span>(function (err, conn) {
+  if(!cb)
+  {
+    if (err) deferred.reject(err);
+  } else
+  {
+    if (err) return cb(err);
+  }
+...</pre></li>
     </ul>
 
 
@@ -3048,7 +3222,23 @@ var Database = require("ibm_db").Database
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function createConnectionSync() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+return deferred ? deferred.promise : null;
+}; // Database.open function
+
+Database.prototype.openSync = function (connStr)
+{
+var self =  this;
+
+self.conn = self.odbc.<span class="apidocCodeKeywordSpan">createConnectionSync</span>();
+
+if (self.connectTimeout || self.connectTimeout === 0)
+{
+  self.conn.connectTimeout = self.connectTimeout;
+}
+if (typeof(self.systemNaming) !== 'undefined')
+{
+...</pre></li>
     </ul>
 
 
@@ -3142,22 +3332,21 @@ var Database = require("ibm_db").Database
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function close() { [native code] }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-ibmdb.open("DATABASE=&lt;dbname&gt;;HOSTNAME=&lt;myhost&gt;;UID=db2user;PWD=password;PORT=&lt;dbport&gt;;PROTOCOL
-=TCPIP", function (err,conn) {
-  if (err) return console.log(err);
 
-  conn.query('select 1 from sysibm.sysdummy1', function (err, data) {
-    if (err) console.log(err);
-    else console.log(data);
+* Update build.zip and defautl connection timeout. (Bimal Jha)
 
-    conn.<span class="apidocCodeKeywordSpan">close</span>(function () {
-      console.log('done');
-    });
-  });
-});
-```
+* Exit with error code on installation errors, to allow failure detection by automated build tools (Michael Szlapa)
 
-## Un-Install
+* Add pool related test files. (Bimal Jha)
+
+* Update conn.<span class="apidocCodeKeywordSpan">close</span>() for Pool to avoid reconnection before moving to available pool.
+Add pool related test files and update existing test files. (Bimal Jha)
+
+* update examples (Bimal Jha)
+
+* Updating the new build.zip for windows (Bimal Jha)
+
+* delete build.zip file on ntx64 after unzip (bimaljha)
 ...</pre></li>
     </ul>
 
@@ -3200,7 +3389,23 @@ ibmdb.open("DATABASE=&lt;dbname&gt;;HOSTNAME=&lt;myhost&gt;;UID=db2user;PWD=pass
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function columns() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  var self = this;
+  if (!self.queue) self.queue = [];
+
+  callback = callback || arguments[arguments.length - 1];
+
+  self.queue.push(function (next)
+  {
+    self.conn.<span class="apidocCodeKeywordSpan">columns</span>(catalog, schema, table, column, function (err, result)
+    {
+if (err) return callback(err, [], false);
+
+result.fetchAll(function (err, data)
+{
+  result.closeSync();
+  callback(err, data);
+...</pre></li>
     </ul>
 
 
@@ -3213,7 +3418,23 @@ ibmdb.open("DATABASE=&lt;dbname&gt;;HOSTNAME=&lt;myhost&gt;;UID=db2user;PWD=pass
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function createStatement() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+var self = this, deferred;
+
+if(!cb)
+{
+  deferred = Q.defer();
+}
+
+self.conn.<span class="apidocCodeKeywordSpan">createStatement</span>(function (err, stmt)
+{
+  if(err)
+  {
+    if(cb)
+    {
+      return cb(err);
+    } else
+...</pre></li>
     </ul>
 
 
@@ -3226,7 +3447,23 @@ ibmdb.open("DATABASE=&lt;dbname&gt;;HOSTNAME=&lt;myhost&gt;;UID=db2user;PWD=pass
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function createStatementSync() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  return deferred ? deferred.promise : null;
+};
+
+Database.prototype.prepareSync = function (sql)
+{
+  var self = this;
+
+  var stmt = self.conn.<span class="apidocCodeKeywordSpan">createStatementSync</span>();
+
+  stmt.queue = new SimpleQueue();
+
+  stmt.prepareSync(sql);
+
+  return stmt;
+};
+...</pre></li>
     </ul>
 
 
@@ -3239,7 +3476,23 @@ ibmdb.open("DATABASE=&lt;dbname&gt;;HOSTNAME=&lt;myhost&gt;;UID=db2user;PWD=pass
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function endTransaction() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  return deferred ? deferred.promise : self;
+};
+
+Database.prototype.endTransaction = function (rollback, cb)
+{
+  var self = this;
+
+  self.conn.<span class="apidocCodeKeywordSpan">endTransaction</span>(rollback, cb);
+  self.conn.inTransaction = false;
+
+  return self;
+};
+
+Database.prototype.commitTransaction = function (cb)
+{
+...</pre></li>
     </ul>
 
 
@@ -3252,7 +3505,23 @@ ibmdb.open("DATABASE=&lt;dbname&gt;;HOSTNAME=&lt;myhost&gt;;UID=db2user;PWD=pass
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function endTransactionSync() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  return self;
+};
+
+Database.prototype.endTransactionSync = function (rollback)
+{
+  var self = this;
+
+  self.conn.<span class="apidocCodeKeywordSpan">endTransactionSync</span>(rollback);
+  self.conn.inTransaction = false;
+
+  return self;
+};
+
+Database.prototype.commitTransactionSync = function ()
+{
+...</pre></li>
     </ul>
 
 
@@ -3383,7 +3652,23 @@ var Database = require("ibm_db").Database
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function setIsolationLevel() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+  return stmt;
+};
+
+Database.prototype.setIsolationLevel = function(isolationLevel)
+{
+  var self = this;
+  return (self.conn.<span class="apidocCodeKeywordSpan">setIsolationLevel</span>(isolationLevel));
+};
+
+//Proxy all of the ODBCStatement functions so that they are queued
+odbc.ODBCStatement.prototype._execute = odbc.ODBCStatement.prototype.execute;
+odbc.ODBCStatement.prototype._executeSync = odbc.ODBCStatement.prototype.executeSync;
+odbc.ODBCStatement.prototype._executeDirect = odbc.ODBCStatement.prototype.executeDirect;
+odbc.ODBCStatement.prototype._executeDirectSync = odbc.ODBCStatement.prototype.executeDirectSync;
+...</pre></li>
     </ul>
 
 
@@ -3396,7 +3681,23 @@ var Database = require("ibm_db").Database
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function tables() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  var self = this;
+  if (!self.queue) self.queue = [];
+
+  callback = callback || arguments[arguments.length - 1];
+
+  self.queue.push(function (next)
+  {
+    self.conn.<span class="apidocCodeKeywordSpan">tables</span>(catalog, schema, table, type, function (err, result)
+    {
+if (err) return callback(err, [], false);
+
+result.fetchAll(function (err, data)
+{
+  result.closeSync();
+  callback(err, data);
+...</pre></li>
     </ul>
 
 
@@ -3461,7 +3762,23 @@ var Database = require("ibm_db").Database
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function fetch() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+};
+return stream;
+};
+
+Database.prototype.fetchStreamingResults = function(results, stream)
+{
+var self = this;
+return results.<span class="apidocCodeKeywordSpan">fetch</span>(function (err, data)
+{
+  if (err)
+  {
+    return process.nextTick(function () { stream.emit('error', err); });
+  }
+  // when no more data returns, return push null to indicate the end of stream
+  if (!data)
+...</pre></li>
     </ul>
 
 
@@ -3474,7 +3791,23 @@ var Database = require("ibm_db").Database
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function fetchAll() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+      function fetchMore()
+      {
+        if (self.fetchMode)
+        {
+result.fetchMode = self.fetchMode;
+        }
+
+        result.<span class="apidocCodeKeywordSpan">fetchAll</span>(function (err, data, rowcount) {
+var moreResults = false, moreResultsError = null;
+
+// If there is any error, return it now only.
+if( err || initialErr )
+{
+  // For pooled connection, if we get SQL30081N, then close
+  // the connection now only and then proceed.
+...</pre></li>
     </ul>
 
 
@@ -3516,7 +3849,23 @@ stmt.execute([142], function (err, result) {
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function fetchSync() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+}
+
+// Fetch single row at once and process it.
+// Note that queryResult will bring only 64k data from server and result.fetchSync
+// will return each row from this 64k client buffer. Once all data is read from
+// buffer, ibm_db driver will bring another 64k chunk of data from server.
+var data;
+while( data = result.<span class="apidocCodeKeywordSpan">fetchSync</span>() )
+{
+  console.log(data);
+}
+
+// drop the table and close connection.
+conn.querySync("drop table mytab");
+conn.closeSync();
+...</pre></li>
     </ul>
 
 
@@ -3542,7 +3891,22 @@ stmt.execute([142], function (err, result) {
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function moreResultsSync() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  return next();
+}
+
+// Get the result data
+try
+{
+  if(rowcount)  // Check for more result set.
+      moreResults = result.<span class="apidocCodeKeywordSpan">moreResultsSync</span>();
+}
+catch (e)
+{
+  moreResultsError = e;
+  moreResults = false;
+}
+...</pre></li>
     </ul>
 
 
@@ -3578,7 +3942,23 @@ stmt.execute([142], function (err, result) {
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function bind() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+      cb(err);
+    } else
+    {
+      deferred.reject(err);
+    }
+  }
+}
+self.<span class="apidocCodeKeywordSpan">_bind</span>(params, function (err) {
+  if (err) {
+    if(!deferred)
+    {
+      cb(err);
+    } else
+    {
+      deferred.reject(err);
+...</pre></li>
     </ul>
 
 
@@ -3591,7 +3971,22 @@ stmt.execute([142], function (err, result) {
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function bindSync() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+odbc.ODBCStatement.prototype.bindSync = function (ary) {
+    var self = this;
+    if(Array.isArray(ary))
+    {
+      var err = parseParams(ary);
+      if(err) return false;
+    }
+    return self.<span class="apidocCodeKeywordSpan">_bindSync</span>(ary);
+};
+
+
+module.exports.Pool = Pool;
+
+Pool.count = 0;
+...</pre></li>
     </ul>
 
 
@@ -3604,7 +3999,23 @@ stmt.execute([142], function (err, result) {
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function execute() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  } else
+  {
+    deferred.reject(err);
+  }
+  return next();
+}
+
+self.<span class="apidocCodeKeywordSpan">_execute</span>(function (err, result, outparams) {
+  if(!deferred)
+  {
+    cb(err, result, outparams);
+  } else
+  {
+    if(err)
+    {
+...</pre></li>
     </ul>
 
 
@@ -3617,7 +4028,22 @@ stmt.execute([142], function (err, result) {
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function executeDirect() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+odbc.ODBCStatement.prototype.executeDirect = function (sql, cb)
+{
+  var self = this;
+
+  self.queue = self.queue || new SimpleQueue();
+
+  self.queue.push(function (next) {
+    self.<span class="apidocCodeKeywordSpan">_executeDirect</span>(sql, function (err, result) {
+      cb(err, result);
+
+      return next();
+    });
+  });
+};
+...</pre></li>
     </ul>
 
 
@@ -3643,7 +4069,23 @@ stmt.execute([142], function (err, result) {
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function executeNonQuery() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  else
+  {
+    deferred.reject(err);
+  }
+  return next();
+}
+
+self.<span class="apidocCodeKeywordSpan">_executeNonQuery</span>(function (err, result) {
+  if(!deferred)
+  {
+    if(cb) cb(err, result);
+  }
+  else
+  {
+    if(err)
+...</pre></li>
     </ul>
 
 
@@ -3669,7 +4111,23 @@ stmt.execute([142], function (err, result) {
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function executeSync() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  //If params are passed to this function, first bind them and
+  //then execute.
+  if (params)
+  {
+  err = self.bindSync(params);
+  if(err !== true) console.log(err);
+  }
+  return self.<span class="apidocCodeKeywordSpan">_executeSync</span>();
+};
+
+function parseParams(params)
+{
+var err, prm, paramtype, ctype, sqltype, datatype, data, len;
+for (var i = 0; i &lt; params.length; i++)
+{
+...</pre></li>
     </ul>
 
 
@@ -3682,7 +4140,22 @@ stmt.execute([142], function (err, result) {
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function prepare() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+odbc.ODBCStatement.prototype.prepare = function (sql, cb) {
+  var self = this;
+
+  self.queue = self.queue || new SimpleQueue();
+
+  self.queue.push(function (next) {
+    self.<span class="apidocCodeKeywordSpan">_prepare</span>(sql, function (err) {
+      if(cb) cb(err);
+
+      return next();
+    });
+  });
+};
+...</pre></li>
     </ul>
 
 
@@ -4319,7 +4792,22 @@ You can increase the thread pool size by using @developmentseed's [node-eio]
     }
   });
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  //move this connection back to the connection pool at the end.
+  if(db.conn)
+  {
+    self.availablePool[connStr] = self.availablePool[connStr] || [];
+    self.availablePool[connStr].push(db);
+
+    //start cleanUp if enabled
+    if(self.options.autoCleanIdle) self.<span class="apidocCodeKeywordSpan">cleanUp</span>(connStr);
+  }
+  if(exports.debug) {
+    process.stdout.write(getElapsedTime());
+    console.dir(self);
+  }
+};  // db.close function
+...</pre></li>
     </ul>
 
 
@@ -4422,22 +4910,21 @@ You can increase the thread pool size by using @developmentseed's [node-eio]
   }, 2000);  //setTimeout
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-ibmdb.open("DATABASE=&lt;dbname&gt;;HOSTNAME=&lt;myhost&gt;;UID=db2user;PWD=password;PORT=&lt;dbport&gt;;PROTOCOL
-=TCPIP", function (err,conn) {
-  if (err) return console.log(err);
 
-  conn.query('select 1 from sysibm.sysdummy1', function (err, data) {
-    if (err) console.log(err);
-    else console.log(data);
+* Update build.zip and defautl connection timeout. (Bimal Jha)
 
-    conn.<span class="apidocCodeKeywordSpan">close</span>(function () {
-      console.log('done');
-    });
-  });
-});
-```
+* Exit with error code on installation errors, to allow failure detection by automated build tools (Michael Szlapa)
 
-## Un-Install
+* Add pool related test files. (Bimal Jha)
+
+* Update conn.<span class="apidocCodeKeywordSpan">close</span>() for Pool to avoid reconnection before moving to available pool.
+Add pool related test files and update existing test files. (Bimal Jha)
+
+* update examples (Bimal Jha)
+
+* Updating the new build.zip for windows (Bimal Jha)
+
+* delete build.zip file on ntx64 after unzip (bimaljha)
 ...</pre></li>
     </ul>
 
@@ -4815,21 +5302,21 @@ if (!self.executing) {
   }
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-self.maybeNext();
+          }
+        }
+
+        //NOTE: We only execute the next queued bind call after
+        // we have called execute() or executeNonQuery(). This ensures
+        // that we don't call a bind() a bunch of times without ever
+        // actually executing that bind. Not
+        self.bindQueue &amp;&amp; self.bindQueue.<span class="apidocCodeKeywordSpan">next</span>();
+
+        return next();
+      });
+    }
+  });
+  return deferred ? deferred.promise : null;
 };
-
-SimpleQueue.prototype.maybeNext = function () {
-var self = this;
-
-if (!self.executing) {
-  self.<span class="apidocCodeKeywordSpan">next</span>();
-}
-};
-
-SimpleQueue.prototype.next = function () {
-var self = this;
-
-if (self.fifo.length) {
 ...</pre></li>
     </ul>
 
@@ -4850,20 +5337,21 @@ if (self.fifo.length) {
   self.maybeNext();
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-self.fifo = [];
-self.executing = false;
-}
+{
+  var self = this, deferred;
+  if(!cb)
+  {
+    deferred = Q.defer();
+  }
 
-SimpleQueue.prototype.push = function (fn) {
-var self = this;
+  self.queue.<span class="apidocCodeKeywordSpan">push</span>(function (next) {
+    if(self.conn)
+    {
+      self.conn.close(function (err) {
+self.connected = false;
+delete self.conn;
 
-self.fifo.<span class="apidocCodeKeywordSpan">push</span>(fn);
-
-self.maybeNext();
-};
-
-SimpleQueue.prototype.maybeNext = function () {
-var self = this;
+if (cb)
 ...</pre></li>
     </ul>
 
