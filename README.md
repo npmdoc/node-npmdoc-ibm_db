@@ -1,6 +1,6 @@
 # npmdoc-ibm_db
 
-#### api documentation for  [ibm_db (v2.0.0)](https://github.com/ibmdb/node-ibm_db/)  [![npm package](https://img.shields.io/npm/v/npmdoc-ibm_db.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-ibm_db) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-ibm_db.svg)](https://travis-ci.org/npmdoc/node-npmdoc-ibm_db)
+#### basic api documentation for  [ibm_db (v2.0.0)](https://github.com/ibmdb/node-ibm_db/)  [![npm package](https://img.shields.io/npm/v/npmdoc-ibm_db.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-ibm_db) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-ibm_db.svg)](https://travis-ci.org/npmdoc/node-npmdoc-ibm_db)
 
 #### IBM DB2 and IBM Informix bindings for node
 
@@ -82,7 +82,8 @@
         "install": "node installer/driverInstall.js",
         "test": "cd test && node run-tests.js"
     },
-    "version": "2.0.0"
+    "version": "2.0.0",
+    "bin": {}
 }
 ```
 
